@@ -55,18 +55,10 @@ source .venv/bin/activate
 ### 3. Install dependencies
 
 ```bash
-pip install pillow
-pip install djangorestframework
-pip install mysqlclient
+pip install -r requirements.txt
 ```
 
-If `mysqlclient` fails on your machine, use:
-
-```bash
-pip install pymysql
-```
-
-and add this in `studybud/__init__.py`:
+If `mysqlclient` fails on your machine, add this optional fallback in `studybud/__init__.py`:
 
 ```python
 import pymysql
@@ -89,25 +81,20 @@ Update DB credentials in `studybud/settings.py` if needed:
 - `HOST`
 - `PORT`
 
-### 5. create app
-```bash
-python manage.py startapp app_name
-```
-
-### 6. Apply migrations
+### 5. Apply migrations
 
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-### 7. Create an admin user
+### 6. Create an admin user
 
 ```bash
 python manage.py createsuperuser
 ```
 
-### 8. Run development server
+### 7. Run development server
 
 ```bash
 python manage.py runserver
