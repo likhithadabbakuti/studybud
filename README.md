@@ -68,7 +68,7 @@ pip install pymysql
 
 and add this in `studybud/__init__.py`:
 
-```python
+```python (optional):
 import pymysql
 pymysql.install_as_MySQLdb()
 ```
