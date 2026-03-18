@@ -60,7 +60,7 @@ pip install -r requirements.txt
 
 If `mysqlclient` fails on your machine, add this optional fallback in `studybud/__init__.py`:
 
-```python
+```python (optional):
 import pymysql
 pymysql.install_as_MySQLdb()
 ```
