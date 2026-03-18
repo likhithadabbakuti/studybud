@@ -20,7 +20,7 @@
     </div>
     {% else%}
     <div>
-        <form action="" method="post">
+        <form method="post" action="">
             {% csrf_token %}
             {{form.as_p}} 
             <!-- wrap the paragraph in the form -->

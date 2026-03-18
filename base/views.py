@@ -1,13 +1,12 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .models import Room,Topic,Message
-from .forms import RoomForm,UserForm
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login,logout
-from django.contrib import messages
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import authenticate, login, logout
+from .models import Room, Topic, Message, User
+from .forms import RoomForm, UserForm, MyUserCreationForm
+
 # rooms =[
 #     {'id':1,'name':'let us learn python'},
 #     {'id':2, 'name':'design with me'},
@@ -19,15 +18,15 @@ def loginPage(request):
         return redirect('home')
     if request.method == "POST":
         #give u,p
-        username = request.POST.get('username')
+        email = request.POST.get('email').lower()
         password = request.POST.get('password')
         #check if user exist
         try:
-            user = User.objects.get(username=username)
+            user = User.objects.get(email=email)
         except:
             messages.error(request,'User does not exist')
         #credentials are crct
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(request, email=email, password=password)
         #create session and allow to login
         if user is not None:
             login(request,user)
@@ -41,11 +40,10 @@ def logoutUser(request):
     return redirect('home')
 
 def registerPage(request):
-    page = 'register'
-    form = UserCreationForm()
+    form = MyUserCreationForm()
     #pass the user data
     if request.method == 'POST':
-        form = UserCreationForm(request.POST) #through in UCform
+        form = MyUserCreationForm(request.POST) #through in UCform
         if form.is_valid():
             user=form.save(commit=False)
             #commit = false -saving and freezing the user
@@ -55,6 +53,7 @@ def registerPage(request):
             return redirect('home')
         else:
             messages.error(request,'An error occured during registration')
+
     return render(request,'base/login_register.html',{'form':form})
 def home(request):
     #to get query like if we click on one topic that topic related info
@@ -64,15 +63,15 @@ def home(request):
                               Q(description__icontains=q) )
     #only topic name _ _ for parent
     #icontains-matches the data if substr exists, contains-will be case-sensitive
-    topics = Topic.objects.all()
+    topics = Topic.objects.all()[0:5]
     room_count= rooms.count()
-    room_messages=Message.objects.filter(Q(room__name__icontains=q))
+    room_messages=Message.objects.filter(Q(room__name__icontains=q))[0:3]
     context={'rooms':rooms,'topics':topics,'room_count':room_count,'room_messages':room_messages}
     return render(request,'base/home.html',context) 
 
 def room(request,pk):
     room=Room.objects.get(id=pk)
-    room_messages = room.message_set.all().order_by('-created')
+    room_messages = room.message_set.all()
     participants=room.participants.all()
 
     if request.method == 'POST':
@@ -148,7 +147,7 @@ def deleteRoom(request,pk):
 
 @login_required(login_url='login')
 def deleteMessage(request,pk):
-    message =Message.objects.get(id=pk)
+    message = Message.objects.get(id=pk)
     if request.user != message.user:
         return HttpResponse('you are not allowwed here!!')
     if request.method == 'POST':
@@ -159,9 +158,9 @@ def deleteMessage(request,pk):
 @login_required(login_url='login')
 def updateUser(request):
     user = request.user
-    form = UserForm(instance=request.user) # Pre-fill form with book's data
+    form = UserForm(instance=user) # Pre-fill form with book's data
     if request.method == 'POST':
-        form = UserForm(request.POST, instance = user)
+        form = UserForm(request.POST,request.FILES, instance = user)
         if form.is_valid():
             form.save()
             return redirect('user_profile', pk = user.id)
@@ -169,4 +168,10 @@ def updateUser(request):
     return render(request,'base/update_user.html',context)
 
 def topicsPage(request):
-    return render(request, 'base/topics.html',{})
+    q=request.GET.get('q') if request.GET.get('q') != None else ''
+    topics = Topic.objects.filter(name__icontains=q)
+    return render(request, 'base/topics.html',{'topics':topics})
+
+def activitiesPage(request):
+    room_messages = Message.objects.all()
+    return render(request,'base/activity.html',{'room_messages':room_messages})

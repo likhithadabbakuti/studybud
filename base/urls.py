@@ -18,4 +18,5 @@ urlpatterns = [
     path('update_user/',views.updateUser,name='update_user'),
 
     path('topics/',views.topicsPage,name='topics'),
+    path('activity/',views.activitiesPage,name='activity'),
 ]
