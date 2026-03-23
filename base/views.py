@@ -17,17 +17,17 @@ def loginPage(request):
     if request.user.is_authenticated:
         return redirect('home')
     if request.method == "POST":
-        #give u,p
-        email = request.POST.get('email').lower()
+        # give u,p
+        username = request.POST.get('username', '').lower()
         password = request.POST.get('password')
-        #check if user exist
+        # check if user exist
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(username=username)
         except:
             messages.error(request,'User does not exist')
-        #credentials are crct
-        user = authenticate(request, email=email, password=password)
-        #create session and allow to login
+        # credentials are crct
+        user = authenticate(request, username=username, password=password)
+        # create session and allow to login
         if user is not None:
             login(request,user)
             return redirect('home')
@@ -52,7 +52,10 @@ def registerPage(request):
             login(request,user)
             return redirect('home')
         else:
-            messages.error(request,'An error occured during registration')
+            for field, errors in form.errors.items():
+                label = form.fields[field].label if field in form.fields else field
+                for error in errors:
+                    messages.error(request, f"{label}: {error}")
 
     return render(request,'base/login_register.html',{'form':form})
 def home(request):
