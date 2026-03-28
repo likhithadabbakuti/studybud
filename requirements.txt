@@ -3,4 +3,3 @@ djangorestframework==3.16.1
 mysqlclient==2.2.7
 Pillow==11.2.1
 PyMySQL==1.1.1
-psycopg[binary]==3.2.10

@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
-from urllib.parse import unquote, urlparse
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -34,32 +33,6 @@ def load_env_file(env_path):
 
 
 load_env_file(BASE_DIR / '.env')
-
-
-def database_config_from_url(url):
-    parsed = urlparse(url)
-    scheme = parsed.scheme.lower()
-
-    if scheme in ('postgres', 'postgresql', 'pgsql'):
-        engine = 'django.db.backends.postgresql'
-    elif scheme in ('mysql',):
-        engine = 'django.db.backends.mysql'
-    elif scheme in ('sqlite',):
-        return {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': unquote(parsed.path.lstrip('/')) or BASE_DIR / 'db.sqlite3',
-        }
-    else:
-        raise ValueError(f'Unsupported DATABASE_URL scheme: {parsed.scheme}')
-
-    return {
-        'ENGINE': engine,
-        'NAME': unquote(parsed.path.lstrip('/')),
-        'USER': unquote(parsed.username or ''),
-        'PASSWORD': unquote(parsed.password or ''),
-        'HOST': parsed.hostname or '',
-        'PORT': str(parsed.port or ''),
-    }
 
 
 # Quick-start development settings - unsuitable for production
@@ -126,11 +99,8 @@ WSGI_APPLICATION = 'studybud.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-database_url = os.getenv('DATABASE_URL')
-if database_url:
-    default_database = database_config_from_url(database_url)
-else:
-    default_database = {
+DATABASES = {
+    'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('DB_NAME', 'studybud'),
         'USER': os.getenv('DB_USER', 'root'),
@@ -138,8 +108,7 @@ else:
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '3306'),
     }
-
-DATABASES = {'default': default_database}
+}
 
 
 # Password validation
